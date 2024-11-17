@@ -63,8 +63,9 @@ public class InputRequestServiceImpl implements InputRequestService {
 
     @Override
     public InputRequestDto getRequest(long id) {
-        return inputRequestRepository.findById(id).map(inputRequest -> modelMapper.map(inputRequest, InputRequestDto.class)).orElseThrow(() ->new ResourceNotFoundException("Employee not found with id : " +id));
-
+        return inputRequestRepository.findById(id)
+                .map(inputRequest -> modelMapper.map(inputRequest, InputRequestDto.class))
+                .orElseThrow(() ->new ResourceNotFoundException("Request not found with id : " +id));
 
     }
 }
