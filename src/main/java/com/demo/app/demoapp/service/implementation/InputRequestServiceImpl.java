@@ -37,7 +37,8 @@ public class InputRequestServiceImpl implements InputRequestService {
 
     @Override
     public InputRequestDto generateRequest(InputRequestDto inputRequestDto) {
-        demoClient.getResponse();
+        var clientResponse  = demoClient.getResponse();
+        log.info(clientResponse);
         InputRequest inputRequest = new InputRequest();
         BillingHeaderDto billingHeaderDto = inputRequestDto.getBillingHeader();
         List<BillingLineDto> billingLinesDto = inputRequestDto.getBillingLines();

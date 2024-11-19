@@ -1,0 +1,37 @@
+#Actuator
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+#Resilience Configurations
+resilience4j:
+  retry:
+    instances:
+      demoClientRetry: #retry endpoint name
+        maxRetryAttempts: 3
+        waitDuration: 5s
+  ratelimiter:
+    instances:
+      demoClientRateLimiter:
+        limitRefreshPeriod: 5s # refresh limit second
+        limitForPeriod: 1  # max no. of calls in refresh peroid
+        timeoutDuration: 3s # time to wait for permission before a req fails
+  circuitbreaker:
+    instances:
+      demoClientCircuitBreaker:
+        registerHealthIndicator: true  # to expose circuit breaker health via the actuator
+        slidingWindowSize: 10          # size of the sliding window - call recording
+        slidingWindowType: COUNT_BASED # to use count-based sliding window
+        minimumNumberOfCalls: 10       # min no. of calls before calculating failure rate
+        failureRateThreshold: 50       # if 50% (5 out of 10) calls fail, the circuit goes to OPEN state
+        waitDurationInOpenState: 1s   # time the circuit stays OPEN before moving to HALF_OPEN
+        permittedNumberOfCallsInHalfOpenState: 3  # no. of test calls in HALF_OPEN state
+        eventConsumerBufferSize: 10    # buffer size for event logs
