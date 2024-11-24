@@ -21,7 +21,7 @@ public class InputRequest {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private BillingHeader billingHeader;
 
-    @OneToMany(mappedBy = "inputRequest",  cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "inputRequest", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<BillingLineInformation> billingLines;
 
 }

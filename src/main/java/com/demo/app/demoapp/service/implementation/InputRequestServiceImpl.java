@@ -12,6 +12,7 @@ import com.demo.app.demoapp.repo.InputRequestRepository;
 import com.demo.app.demoapp.service.InputRequestService;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,8 @@ import java.util.List;
 @Service
 public class InputRequestServiceImpl implements InputRequestService {
 
+    @Value("${demoClient.resiliency.check}")
+    private Boolean RESILIENCY_CHECK;
 
     private ModelMapper modelMapper;
     private InputRequestRepository inputRequestRepository;
@@ -37,8 +40,11 @@ public class InputRequestServiceImpl implements InputRequestService {
 
     @Override
     public InputRequestDto generateRequest(InputRequestDto inputRequestDto) {
-        var clientResponse  = demoClient.getResponse();
-        log.info(clientResponse);
+        if(RESILIENCY_CHECK) {
+            log.info("Hitting Demo Client for resiliency check");
+            var clientResponse  = demoClient.getResponse();
+            log.info("Response: {}", clientResponse);
+        }
         InputRequest inputRequest = new InputRequest();
         BillingHeaderDto billingHeaderDto = inputRequestDto.getBillingHeader();
         List<BillingLineDto> billingLinesDto = inputRequestDto.getBillingLines();
@@ -58,12 +64,13 @@ public class InputRequestServiceImpl implements InputRequestService {
                         .lineType(bl.getBillingLineInformation().getLineType())
                         .build())
                 .toList());
-
+        log.info("Saving Model: {}", inputRequest);
         return modelMapper.map(inputRequestRepository.save(inputRequest),InputRequestDto.class);
     }
 
     @Override
     public InputRequestDto getRequest(long id) {
+        log.info("Fetching Model with id: {}",id);
         return inputRequestRepository.findById(id)
                 .map(inputRequest -> modelMapper.map(inputRequest, InputRequestDto.class))
                 .orElseThrow(() ->new ResourceNotFoundException("Request not found with id : " +id));
