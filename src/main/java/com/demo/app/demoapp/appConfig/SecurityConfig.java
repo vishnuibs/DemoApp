@@ -6,6 +6,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -18,15 +19,18 @@ public class SecurityConfig{
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/h2-console/*",
+                        .requestMatchers(
+                                "/h2-console",
+                                "/h2-console/**",
                                 "/actuator",
-                                "/actuator/*",
+                                "/actuator/**",
                                 "/billing/generate")
                         .permitAll())
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest()
                         .authenticated())
                 .oauth2Login(Customizer.withDefaults());
+        httpSecurity.headers(HeadersConfigurer::disable);
         return  httpSecurity.build();
     }
 }
