@@ -10,6 +10,7 @@ import com.demo.app.demoapp.entity.BillingLineInformation;
 import com.demo.app.demoapp.entity.InputRequest;
 import com.demo.app.demoapp.repo.InputRequestRepository;
 import com.demo.app.demoapp.service.InputRequestService;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,8 +22,8 @@ import java.util.List;
 @Service
 public class InputRequestServiceImpl implements InputRequestService {
 
-    @Value("${demoClient.resiliency.check}")
-    private Boolean RESILIENCY_CHECK;
+//    @Value("${demoClient.resiliency.check}")
+//    private Boolean RESILIENCY_CHECK;
 
     private ModelMapper modelMapper;
     private InputRequestRepository inputRequestRepository;
@@ -40,11 +41,9 @@ public class InputRequestServiceImpl implements InputRequestService {
 
     @Override
     public InputRequestDto generateRequest(InputRequestDto inputRequestDto) {
-        if(RESILIENCY_CHECK) {
-            log.info("Hitting Demo Client for resiliency check");
-            var clientResponse  = demoClient.getResponse();
-            log.info("Response: {}", clientResponse);
-        }
+        log.info("Hitting Demo Client for resiliency check");
+        var clientResponse  = demoClient.getResponse();
+        log.info("Response: {}", clientResponse);
         InputRequest inputRequest = new InputRequest();
         BillingHeaderDto billingHeaderDto = inputRequestDto.getBillingHeader();
         List<BillingLineDto> billingLinesDto = inputRequestDto.getBillingLines();
@@ -72,8 +71,14 @@ public class InputRequestServiceImpl implements InputRequestService {
     public InputRequestDto getRequest(long id) {
         log.info("Fetching Model with id: {}",id);
         return inputRequestRepository.findById(id)
-                .map(inputRequest -> modelMapper.map(inputRequest, InputRequestDto.class))
-                .orElseThrow(() ->new ResourceNotFoundException("Request not found with id : " +id));
+                .map(inputRequest -> {
+                    log.info("Fetched InputRequest with id: {}", inputRequest.getId());
+                    return modelMapper.map(inputRequest, InputRequestDto.class);
+                })
+                .orElseThrow(() -> {
+                    log.error("Request not found with id: {}", id);
+                    return new ResourceNotFoundException("Request not found with id: " + id);
+                });
 
     }
 }
